@@ -18,15 +18,13 @@ class Topic {
     public string Title { get; set; }
     public DateTime CreateTime { get; set; }
 }
-
-var items = new List<Topic>();
-for (var a = 0; a < 10; a++) items.Add(new Topic { Title = $"newtitle{a}", Clicks = a * 100 });
 ```
 
 ## 1、单条插入
 
 ```csharp
-var t1 = fsql.Insert(items[0]).ExecuteAffrows();
+var item = new Topic { Title = "newtitle", Clicks = 10 };
+var t1 = fsql.Insert(item).ExecuteAffrows();
 //INSERT INTO `Topic`(`Clicks`, `Title`, `CreateTime`)
 //VALUES(?Clicks0, ?Title0, ?CreateTime0)
 ```
@@ -36,24 +34,27 @@ var t1 = fsql.Insert(items[0]).ExecuteAffrows();
 方法 1：(原始)
 
 ```csharp
-long id = fsql.Insert(items[0]).ExecuteIdentity();
-items[0].Id = id;
+long id = fsql.Insert(item).ExecuteIdentity();
+item.Id = id;
 ```
 
 方法 2：(依赖 FreeSql.Repository)
 
 ```csharp
 var repo = fsql.GetRepository<Topic>();
-repo.Insert(items[0]);
+repo.Insert(item);
 ```
 
-> 内部会将插入后的自增值填充给 items[0].Id (支持批量插入回填)
+> 内部会将插入后的自增值填充给 item.Id (支持批量插入回填)
 
 > DbFirst 模式序列：[Column(IsIdentity = true, InsertValueSql = "seqname.nextval")]
 
 ## 2、批量插入
 
 ```csharp
+var items = new List<Topic>();
+for (var a = 0; a < 10; a++) items.Add(new Topic { Title = $"newtitle{a}", Clicks = a * 100 });
+
 var t2 = fsql.Insert(items).ExecuteAffrows();
 //INSERT INTO `Topic`(`Clicks`, `Title`, `CreateTime`)
 //VALUES(?Clicks0, ?Title0, ?CreateTime0), (?Clicks1, ?Title1, ?CreateTime1),
